@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FairPlay SA — 90-Day Build Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;600;700&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04080f;
+    --bg2: #080f1a;
+    --bg3: #0c1628;
+    --bg4: #0f1f38;
+    --border: #162843;
+    --border2: #1e3a5f;
+    --cyan: #0891b2;
+    --cyan2: #06b6d4;
+    --cyan3: #7dd3fc;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --muted2: #94a3b8;
+    --green: #22c55e;
+    --greenbg: #0a1f0a;
+    --greenborder: #166534;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --p0: #0891b2;
+    --p1: #0e7490;
+    --p2: #155e75;
+    --p3: #1e3a5f;
+    --p4: #1d4ed8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #060e1c 0%, #0a1628 60%, #0c1f3a 100%);
+    border-bottom: 1px solid var(--border2);
+    padding: 36px 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(8,145,178,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .header-inner { max-width: 960px; margin: 0 auto; position: relative; }
+  .badge {
+    display: inline-block;
+    background: var(--cyan);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 700;
+    color: #f0f9ff;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .header-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--cyan3);
+    margin-bottom: 24px;
+  }
+  .save-indicator {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--cyan);
+    margin-left: 16px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .save-indicator.visible { opacity: 1; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { max-width: 480px; }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .progress-labels span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .progress-labels .label { color: var(--cyan3); letter-spacing: 1px; }
+  .progress-labels .count { color: var(--cyan); font-weight: 700; }
+  .progress-track {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--cyan2));
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* MAIN LAYOUT */
+  .main { max-width: 960px; margin: 0 auto; padding: 28px 16px 60px; }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border2);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    background: transparent;
+    color: var(--cyan3);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.2s;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+  }
+  .tab:hover { color: #fff; background: rgba(8,145,178,0.08); }
+  .tab.active {
+    background: var(--cyan);
+    color: #fff;
+    border-bottom-color: var(--cyan);
+  }
+
+  /* PHASE SELECTOR */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .phase-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    padding: 12px 14px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .phase-btn:hover { border-color: var(--cyan); color: var(--text); }
+  .phase-btn.active { color: #fff; }
+  .phase-btn .phase-name { font-size: 12px; font-weight: 700; display: block; margin-bottom: 2px; }
+  .phase-btn .phase-count { font-size: 10px; opacity: 0.75; display: block; margin-bottom: 8px; }
+  .phase-mini-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .phase-mini-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* PHASE HEADER CARD */
+  .phase-header {
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .phase-header-left {}
+  .phase-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .phase-icon { font-size: 22px; }
+  .phase-title-block {}
+  .phase-title-block h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: #f0f9ff;
+    margin-bottom: 2px;
+  }
+  .phase-period {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan3);
+  }
+  .phase-desc { color: var(--muted2); font-size: 13px; max-width: 580px; }
+  .phase-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .phase-pct-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* MILESTONE LIST */
+  .milestone-list { display: flex; flex-direction: column; gap: 4px; }
+  .milestone-item {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: all 0.2s;
+  }
+  .milestone-item.done {
+    background: var(--greenbg);
+    border-color: var(--greenborder);
+    opacity: 0.78;
+  }
+  .milestone-item:hover { border-color: var(--cyan); }
+  .milestone-item.done:hover { border-color: var(--greenborder); }
+
+  .check-btn {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    border: 2px solid var(--cyan);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: #fff;
+  }
+  .check-btn.done {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .check-btn.round { border-radius: 50%; }
+
+  .milestone-body { flex: 1; }
+  .milestone-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .milestone-item.done .milestone-text {
+    text-decoration: line-through;
+    color: #4ade80;
+  }
+  .milestone-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .tag-day { color: var(--cyan); background: rgba(8,145,178,0.12); }
+  .tag-custom { color: var(--amber); background: rgba(245,158,11,0.12); }
+  .note-preview {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .milestone-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 3px 5px;
+    border-radius: 3px;
+    transition: color 0.2s;
+  }
+  .icon-btn:hover { color: var(--cyan3); }
+
+  /* NOTE EDITOR */
+  .note-editor {
+    margin-top: 10px;
+  }
+  .note-editor textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 60px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .note-editor textarea:focus { border-color: var(--cyan); }
+  .note-actions { display: flex; gap: 8px; margin-top: 6px; }
+  .btn-sm {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--cyan); color: #fff; }
+  .btn-primary:hover { background: var(--cyan2); }
+  .btn-ghost { background: transparent; color: var(--muted2); border: 1px solid var(--border2); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted2); }
+
+  /* HABITS */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    margin-top: 32px;
+  }
+  .section-title:first-child { margin-top: 0; }
+  .section-desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+    margin-top: -8px;
+  }
+
+  /* ADD FORM */
+  .add-form {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .form-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--cyan3);
+    margin-bottom: 8px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: 'Source Serif 4', serif;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--cyan); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select { font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
+
+  .btn-add {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 12px 28px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    background: var(--cyan);
+    color: #fff;
+  }
+  .btn-add:hover { background: var(--cyan2); transform: translateY(-1px); }
+  .btn-add:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; transform: none; }
+
+  /* CUSTOM ITEMS LIST */
+  .custom-list-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin: 32px 0 14px;
+  }
+
+  /* AGILE CARD */
+  .agile-card {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-top: 32px;
+  }
+  .agile-card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 18px;
+  }
+  .agile-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .agile-row-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    min-width: 130px;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+  .agile-row-text { font-size: 13px; color: var(--muted2); }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .footer span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--border2);
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .panel { animation: fadeIn 0.25s ease; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .header { padding: 24px 16px 20px; }
+    .phase-grid { grid-template-columns: 1fr 1fr; }
+    .phase-header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">FAIRPLAY ENGINEERING</div>
+    <h1>90-Day SA Team Build Plan</h1>
+    <div class="header-sub">
+      Ruan Terblanche · Recruitment Team Lead · 15 April 2026
+      <span class="save-indicator" id="saveIndicator">● saved</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span class="label">OVERALL PROGRESS</span>
+        <span class="count" id="overallCount">0/0 — 0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="overallBar" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('milestones')">📋 Milestones</button>
+    <button class="tab" onclick="switchTab('daily')">🔁 Daily Habits</button>
+    <button class="tab" onclick="switchTab('add')">➕ Add Objective</button>
+  </div>
+
+  <!-- MILESTONES PANEL -->
+  <div id="panel-milestones" class="panel">
+    <div class="phase-grid" id="phaseGrid"></div>
+    <div class="phase-header" id="phaseHeader"></div>
+    <div class="milestone-list" id="milestoneList"></div>
+  </div>
+
+  <!-- DAILY PANEL -->
+  <div id="panel-daily" class="panel" style="display:none">
+    <p class="section-title" style="margin-top:0">◈ Daily Non-Negotiables</p>
+    <p class="section-desc">These habits compound. Miss them occasionally and nothing breaks. Miss them consistently and trust erodes.</p>
+    <div class="milestone-list" id="dailyList"></div>
+
+    <p class="section-title">◎ Weekly Rituals</p>
+    <p class="section-desc">The habits that keep Hoofddorp informed and your team growing.</p>
+    <div class="milestone-list" id="weeklyList"></div>
+
+    <div class="agile-card">
+      <div class="agile-card-title">⚡ Agile Principles — Stay Adaptive</div>
+      <div class="agile-row">
+        <div class="agile-row-label">Monthly Retro</div>
+        <div class="agile-row-text">30 min alone. What worked? What didn't? What changes next month?</div>
+      </div>
+      <div class="agile-row">
+        <div class="agile-row-label">Quarterly Reset</div>
+        <div class="agile-row-text">Revisit all goals every 3 months. Circumstances change — your plan must too.</div>
+      </div>
+      <div class="agile-row">
+        <div class="agile-row-label">The Parking Lot</div>
+        <div class="agile-row-text">Keep a running list of ideas not yet urgent. Review monthly.</div>
+      </div>
+      <div class="agile-row">
+        <div class="agile-row-label">Flag Early</div>
+        <div class="agile-row-text">Surface problems to Niek before he asks. Leaders who do this build lasting trust.</div>
+      </div>
+      <div class="agile-row">
+        <div class="agile-row-label">Celebrate Publicly</div>
+        <div class="agile-row-text">Post wins in the shared Slack channel. Make Hoofddorp feel the momentum.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD PANEL -->
+  <div id="panel-add" class="panel" style="display:none">
+    <p class="section-title" style="margin-top:0">Add Custom Objective</p>
+    <p class="section-desc" style="margin-top:-4px;margin-bottom:20px">As your role evolves, add objectives as they emerge. Assign them to a phase and track alongside your core milestones.</p>
+
+    <div class="add-form">
+      <label class="form-label">Objective *</label>
+      <textarea class="form-textarea" id="newText" placeholder="Describe the objective clearly and specifically..."></textarea>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Assign to Phase *</label>
+          <select class="form-select" id="newPhase">
+            <option value="p0">Phase 0: Pre-Launch Prep</option>
+            <option value="p1">Phase 1: Foundation</option>
+            <option value="p2">Phase 2: First Hire</option>
+            <option value="p3">Phase 3: Onboarding & Systems</option>
+            <option value="p4">Phase 4: Prove the Model</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Target Date / Week</label>
+          <input class="form-input" id="newDay" placeholder="e.g. Week 3, Month 2, Day 5">
+        </div>
+      </div>
+
+      <button class="btn-add" onclick="addCustomItem()">Add to Plan</button>
+    </div>
+
+    <div id="customListWrap" style="display:none">
+      <div class="custom-list-header" id="customListHeader"></div>
+      <div class="milestone-list" id="customList"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>FairPlay Engineering SA · Built to last beyond the 90 days</span>
+    <span id="footerCount">0 completed · 0 remaining</span>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const PHASES = [
+  {
+    id: "p0", title: "Phase 0", subtitle: "Pre-Launch Prep",
+    period: "Week 1–2 · Apr 15–28", color: "#0891b2", icon: "◈",
+    desc: "Get oriented, build relationships, understand the operation before touching anything.",
+    milestones: [
+      { id: "p0m1", text: "Attend first team call with Hoofddorp — introduce yourself and listen", day: "Day 1" },
+      { id: "p0m2", text: "Request access to all tools: ATS, LinkedIn Recruiter, Slack/Teams, email", day: "Day 1" },
+      { id: "p0m3", text: "Schedule 1-on-1s with Franli and Niek to understand expectations", day: "Day 2" },
+      { id: "p0m4", text: "Map the full recruitment workflow: intake → sourcing → screening → placement", day: "Week 1" },
+      { id: "p0m5", text: "Clarify SA legal structure for future hires (Ad On SA vs FairPlay entity)", day: "Week 1" },
+      { id: "p0m6", text: "Identify which workflow stages SA will own vs Hoofddorp", day: "Week 1" },
+      { id: "p0m7", text: "Understand GDPR requirements for handling EU candidate data from SA", day: "Week 2" },
+      { id: "p0m8", text: "Draft your 90-day goals and share with Niek for alignment", day: "Week 2" },
+      { id: "p0m9", text: "Send first weekly update to Hoofddorp — establish the habit early", day: "Week 2" },
+    ]
+  },
+  {
+    id: "p1", title: "Phase 1", subtitle: "Foundation",
+    period: "Month 1 · Apr 15 – May 15", color: "#0e7490", icon: "◉",
+    desc: "Stabilise your own delivery, build your operating system, establish trust with Hoofddorp.",
+    milestones: [
+      { id: "p1m1", text: "Full tools stack live and configured (ATS, LinkedIn, Slack, Google Workspace)", day: "Week 2" },
+      { id: "p1m2", text: "Set up Notion/Confluence knowledge base — create folder structure", day: "Week 2" },
+      { id: "p1m3", text: "Agree on weekly reporting format and cadence with Niek", day: "Week 2" },
+      { id: "p1m4", text: "Define personal KPIs: sourced, submitted, interviewed, placed per month", day: "Week 2" },
+      { id: "p1m5", text: "Begin first live recruitment brief — full end-to-end delivery", day: "Week 2" },
+      { id: "p1m6", text: "Write Sourcing SOP: platforms, search strings, outreach templates", day: "Week 3" },
+      { id: "p1m7", text: "Write Screening SOP: question bank, scoring criteria, rejection process", day: "Week 3" },
+      { id: "p1m8", text: "Create candidate presentation template aligned to Hoofddorp standards", day: "Week 3" },
+      { id: "p1m9", text: "Send first monthly business case report — include SA vs NL cost comparison", day: "Month 1 end" },
+      { id: "p1m10", text: "Set up scheduling tool (Calendly) for candidate interview booking", day: "Month 1 end" },
+      { id: "p1m11", text: "Install Loom — start sending async video updates to Hoofddorp weekly", day: "Month 1 end" },
+    ]
+  },
+  {
+    id: "p2", title: "Phase 2", subtitle: "First Hire",
+    period: "Month 2 · May 15 – Jun 15", color: "#155e75", icon: "◎",
+    desc: "Recruit your first SA team member with intention — quality over speed.",
+    milestones: [
+      { id: "p2m1", text: "Define first hire profile: experience level, skills, personality fit", day: "Month 2 start" },
+      { id: "p2m2", text: "Write job description for Junior/Mid Recruiter — clear, honest, exciting", day: "Month 2 start" },
+      { id: "p2m3", text: "Post role on LinkedIn, PNet, CareerJunction and your own network", day: "Week 5" },
+      { id: "p2m4", text: "Build screening process: CV screen → video call → practical task → final", day: "Week 5" },
+      { id: "p2m5", text: "Create practical assessment task (source 3 candidates for a live brief)", day: "Week 5" },
+      { id: "p2m6", text: "Shortlist top 3 candidates and present to Niek for input", day: "Week 6" },
+      { id: "p2m7", text: "Confirm employment structure and contract type for SA hire", day: "Week 6" },
+      { id: "p2m8", text: "Extend offer to first hire", day: "Week 7" },
+      { id: "p2m9", text: "Draft onboarding checklist: tools, access, process training, culture intro", day: "Week 7" },
+      { id: "p2m10", text: "First hire start date confirmed", day: "Month 2 end" },
+    ]
+  },
+  {
+    id: "p3", title: "Phase 3", subtitle: "Onboarding & Systems",
+    period: "Month 3 · Jun 15 – Jul 15", color: "#1e3a5f", icon: "◌",
+    desc: "Onboard your first hire effectively and complete your operations playbook.",
+    milestones: [
+      { id: "p3m1", text: "First hire Day 1 — full onboarding: tools, SOPs, culture, expectations", day: "Month 3 start" },
+      { id: "p3m2", text: "Assign first hire their first live brief with structured support", day: "Week 9" },
+      { id: "p3m3", text: "Hold weekly 1-on-1 with first hire — set as recurring from day one", day: "Week 9" },
+      { id: "p3m4", text: "Introduce first hire to Hoofddorp team on a video call", day: "Week 9" },
+      { id: "p3m5", text: "Complete SOP document: sourcing, screening, presenting, reporting", day: "Week 10" },
+      { id: "p3m6", text: "First hire completes first independent submission to client", day: "Week 10" },
+      { id: "p3m7", text: "Run first SA team retrospective: what's working, what needs to change", day: "Week 11" },
+      { id: "p3m8", text: "Deliver 90-day review to Niek: results, team status, plan for Month 4–6", day: "Month 3 end" },
+      { id: "p3m9", text: "Begin planning second hire based on workload and gap analysis", day: "Month 3 end" },
+    ]
+  },
+  {
+    id: "p4", title: "Phase 4", subtitle: "Prove the Model",
+    period: "Month 4–6 · Jul – Sep", color: "#1d4ed8", icon: "●",
+    desc: "Scale delivery, bring in hire #2, and build the business case for permanent SA investment.",
+    milestones: [
+      { id: "p4m1", text: "Second hire job posted and pipeline opened", day: "Month 4" },
+      { id: "p4m2", text: "Team delivery metrics tracked and shared monthly (TTF, S2I, I2P ratios)", day: "Month 4" },
+      { id: "p4m3", text: "Second hire onboarded and delivering independently", day: "Month 5" },
+      { id: "p4m4", text: "Formalise cost-value report: SA team cost vs equivalent NL headcount", day: "Month 5" },
+      { id: "p4m5", text: "Mid-year review with Niek — results vs targets, team health, plan reset", day: "Month 6" },
+      { id: "p4m6", text: "Propose Month 7–12 growth plan based on first 6 months learnings", day: "Month 6" },
+      { id: "p4m7", text: "POPIA compliance review — ensure all candidate data handling is compliant", day: "Month 6" },
+      { id: "p4m8", text: "Team culture audit — is the SA team engaged, growing, performing?", day: "Month 6" },
+    ]
+  }
+];
+
+const DAILY = [
+  { id: "d1", text: "Check Slack/Teams — respond to Hoofddorp within 2 hours" },
+  { id: "d2", text: "Send morning standup message to team channel" },
+  { id: "d3", text: "Log all candidate activity in ATS — zero backlogs" },
+  { id: "d4", text: "Make 3–5 new candidate outreach contacts" },
+  { id: "d5", text: "Review open briefs — prioritise by urgency" },
+  { id: "d6", text: "Add anything new to Notion knowledge base" },
+  { id: "d7", text: "End-of-day: update pipeline status on all active roles" },
+];
+
+const WEEKLY = [
+  { id: "w1", text: "Send structured weekly update to Niek and Franli" },
+  { id: "w2", text: "1-on-1 with each team member (once hired)" },
+  { id: "w3", text: "Review your personal KPI dashboard" },
+  { id: "w4", text: "One Loom video to Hoofddorp — personal, not just metrics" },
+  { id: "w5", text: "Friday reflection: what did I learn this week?" },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let state = {
+  completed: {},
+  notes: {},
+  custom: [],
+  activePhase: "p0",
+  activeTab: "milestones"
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem("fp_planner_v2");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  try {
+    localStorage.setItem("fp_planner_v2", JSON.stringify(state));
+    const ind = document.getElementById("saveIndicator");
+    ind.classList.add("visible");
+    setTimeout(() => ind.classList.remove("visible"), 1500);
+  } catch(e) {}
+}
+
+// ─── RENDERING ───────────────────────────────────────────────────────────────
+
+function getPhaseProgress(phaseId) {
+  const phase = PHASES.find(p => p.id === phaseId);
+  const custom = state.custom.filter(c => c.phase === phaseId);
+  const all = [...phase.milestones, ...custom];
+  const done = all.filter(m => state.completed[m.id]).length;
+  return { done, total: all.length, pct: all.length ? Math.round(done / all.length * 100) : 0 };
+}
+
+function getTotalProgress() {
+  const allMilestones = PHASES.flatMap(p => p.milestones);
+  const allItems = [...allMilestones, ...state.custom, ...DAILY, ...WEEKLY];
+  const done = allItems.filter(m => state.completed[m.id]).length;
+  return { done, total: allItems.length, pct: allItems.length ? Math.round(done / allItems.length * 100) : 0 };
+}
+
+function renderHeader() {
+  const tp = getTotalProgress();
+  document.getElementById("overallCount").textContent = `${tp.done}/${tp.total} — ${tp.pct}%`;
+  document.getElementById("overallBar").style.width = tp.pct + "%";
+  document.getElementById("footerCount").textContent = `${tp.done} completed · ${tp.total - tp.done} remaining`;
+}
+
+function renderPhaseGrid() {
+  const grid = document.getElementById("phaseGrid");
+  grid.innerHTML = PHASES.map(phase => {
+    const prog = getPhaseProgress(phase.id);
+    const isActive = state.activePhase === phase.id;
+    return `
+      <button class="phase-btn ${isActive ? 'active' : ''}"
+        style="${isActive ? `background:${phase.color};border-color:${phase.color};` : ''}"
+        onclick="setPhase('${phase.id}')">
+        <span class="phase-name">${phase.icon} ${phase.title}</span>
+        <span class="phase-count">${prog.done}/${prog.total} done</span>
+        <div class="phase-mini-bar">
+          <div class="phase-mini-fill"
+            style="width:${prog.pct}%;background:${isActive ? '#ffffff66' : phase.color}"></div>
+        </div>
+      </button>`;
+  }).join("");
+}
+
+function renderPhaseHeader() {
+  const phase = PHASES.find(p => p.id === state.activePhase);
+  const prog = getPhaseProgress(phase.id);
+  document.getElementById("phaseHeader").style.background =
+    `linear-gradient(135deg, ${phase.color}1a, var(--bg3))`;
+  document.getElementById("phaseHeader").style.border = `1px solid ${phase.color}44`;
+  document.getElementById("phaseHeader").innerHTML = `
+    <div class="phase-header-left">
+      <div class="phase-icon-row">
+        <span class="phase-icon">${phase.icon}</span>
+        <div class="phase-title-block">
+          <h2>${phase.title}: ${phase.subtitle}</h2>
+          <div class="phase-period">${phase.period}</div>
+        </div>
+      </div>
+      <p class="phase-desc">${phase.desc}</p>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div class="phase-pct" style="color:${phase.color}">${prog.pct}%</div>
+      <div class="phase-pct-sub">${prog.done} of ${prog.total}</div>
+    </div>`;
+}
+
+function renderMilestones() {
+  const phase = PHASES.find(p => p.id === state.activePhase);
+  const custom = state.custom.filter(c => c.phase === state.activePhase);
+  const allItems = [...phase.milestones, ...custom];
+  document.getElementById("milestoneList").innerHTML = allItems.map(m =>
+    renderMilestoneItem(m, phase.color, m.custom)
+  ).join("");
+}
+
+function renderMilestoneItem(m, color, isCustom) {
+  const done = !!state.completed[m.id];
+  const note = state.notes[m.id] || "";
+  return `
+    <div class="milestone-item ${done ? 'done' : ''}" id="item-${m.id}">
+      <button class="check-btn ${done ? 'done' : ''}" style="${!done ? `border-color:${color}` : ''}"
+        onclick="toggle('${m.id}')">
+        ${done ? '✓' : ''}
+      </button>
+      <div class="milestone-body">
+        <div class="milestone-text">${m.text}</div>
+        <div class="milestone-meta">
+          <span class="tag tag-day" style="color:${color};background:${color}18">${m.day}</span>
+          ${isCustom ? '<span class="tag tag-custom">CUSTOM</span>' : ''}
+          ${note ? `<span class="note-preview">📝 ${note.slice(0,50)}${note.length>50?'...':''}</span>` : ''}
+        </div>
+        <div class="note-editor" id="note-${m.id}" style="display:none">
+          <textarea placeholder="Add a note or context..."
+            onblur="saveNote('${m.id}', this.value)">${note}</textarea>
+          <div class="note-actions">
+            <button class="btn-sm btn-primary" onclick="saveNoteBtn('${m.id}')">Save</button>
+            <button class="btn-sm btn-ghost" onclick="toggleNote('${m.id}')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="milestone-actions">
+        <button class="icon-btn" onclick="toggleNote('${m.id}')" title="Note">📝</button>
+        ${isCustom ? `<button class="icon-btn" onclick="removeCustom('${m.id}')" title="Remove">✕</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderHabits() {
+  document.getElementById("dailyList").innerHTML = DAILY.map(h => renderHabitItem(h, "#0891b2")).join("");
+  document.getElementById("weeklyList").innerHTML = WEEKLY.map(h => renderHabitItem(h, "#0e7490")).join("");
+}
+
+function renderHabitItem(h, color) {
+  const done = !!state.completed[h.id];
+  return `
+    <div class="milestone-item ${done ? 'done' : ''}">
+      <button class="check-btn round ${done ? 'done' : ''}" style="${!done ? `border-color:${color}` : ''}"
+        onclick="toggle('${h.id}')">
+        ${done ? '✓' : ''}
+      </button>
+      <div class="milestone-body">
+        <div class="milestone-text">${h.text}</div>
+      </div>
+    </div>`;
+}
+
+function renderCustomList() {
+  const wrap = document.getElementById("customListWrap");
+  if (state.custom.length === 0) { wrap.style.display = "none"; return; }
+  wrap.style.display = "block";
+  document.getElementById("customListHeader").textContent = `Your Custom Objectives (${state.custom.length})`;
+  document.getElementById("customList").innerHTML = state.custom.map(item => {
+    const phase = PHASES.find(p => p.id === item.phase);
+    return renderMilestoneItem({...item, day: item.day || "Custom"}, phase?.color || "#0891b2", true);
+  }).join("");
+}
+
+function renderAll() {
+  renderHeader();
+  renderPhaseGrid();
+  renderPhaseHeader();
+  renderMilestones();
+  renderHabits();
+  renderCustomList();
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    const tabs = ["milestones","daily","add"];
+    t.classList.toggle("active", tabs[i] === tab);
+  });
+  document.querySelectorAll("[id^='panel-']").forEach(p => p.style.display = "none");
+  document.getElementById("panel-" + tab).style.display = "block";
+  if (tab === "add") renderCustomList();
+}
+
+function setPhase(id) {
+  state.activePhase = id;
+  renderPhaseGrid();
+  renderPhaseHeader();
+  renderMilestones();
+}
+
+function toggle(id) {
+  state.completed[id] = !state.completed[id];
+  saveState();
+  renderAll();
+}
+
+function toggleNote(id) {
+  const editor = document.getElementById("note-" + id);
+  if (editor) editor.style.display = editor.style.display === "none" ? "block" : "none";
+}
+
+function saveNote(id, text) {
+  if (text !== undefined) {
+    state.notes[id] = text;
+    saveState();
+    renderAll();
+  }
+}
+
+function saveNoteBtn(id) {
+  const editor = document.getElementById("note-" + id);
+  if (editor) {
+    const ta = editor.querySelector("textarea");
+    if (ta) saveNote(id, ta.value);
+  }
+}
+
+function addCustomItem() {
+  const text = document.getElementById("newText").value.trim();
+  if (!text) return;
+  const phase = document.getElementById("newPhase").value;
+  const day = document.getElementById("newDay").value.trim() || "Custom";
+  const item = {
+    id: "c_" + Date.now(),
+    text, phase, day,
+    custom: true
+  };
+  state.custom.push(item);
+  document.getElementById("newText").value = "";
+  document.getElementById("newDay").value = "";
+  saveState();
+  renderAll();
+}
+
+function removeCustom(id) {
+  state.custom = state.custom.filter(c => c.id !== id);
+  delete state.completed[id];
+  saveState();
+  renderAll();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+loadState();
+renderAll();
+</script>
+</body>
+</html>
